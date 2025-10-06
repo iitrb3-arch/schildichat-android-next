@@ -26,6 +26,13 @@ jobs:
           ref: main
           fetch-depth: 0
 
+      # هویت گیت برای commit/push
+      - name: Configure Git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      # اگر قبلاً اعمال شده، خارج شو
       - name: Stop if already applied
         run: |
           if [ -f "${MARKER_FILE}" ]; then
@@ -171,7 +178,7 @@ jobs:
             fi
           done
 
-          echo "Add admin gate note (replace with real check in your code later if needed)…"
+          echo "Add admin gate note (replace with real check later if needed)…"
           echo "Admin-only room/channel creation policy. Expected admin: @admin:edu97.ir" > ADMIN_GATE_NOTE.txt
 
           echo "Mark applied and commit…"
