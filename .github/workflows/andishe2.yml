@@ -1,4 +1,4 @@
-name: Andishe2 One-Time Transform & Build (no-cache)
+name: Andishe2 One-Time Transform & Build (no-cache, fix build)
 
 on:
   push:
@@ -29,7 +29,7 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      - name: Configure Git identity (required for commit/push)
+      - name: Configure Git identity
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -47,8 +47,15 @@ jobs:
           distribution: zulu
           java-version: "17"
 
-      - name: Install Android SDK (no cache)
+      - name: Install Android SDK (CLI tools)
         uses: android-actions/setup-android@v3
+
+      - name: Install required Android packages
+        shell: bash
+        run: |
+          set -euo pipefail
+          yes | sdkmanager --licenses
+          sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools"
 
       - name: Write transform script
         shell: bash
@@ -163,13 +170,13 @@ jobs:
             fi
           done
 
-          echo "Admin-only note (implement check in code later if needed)…"
+          echo "Admin-only note (implement check in app logic if needed)…"
           echo "Admin-only room/channel creation policy. Expected admin: ${ADMIN_ID}" > ADMIN_GATE_NOTE.txt
 
           echo "Mark applied and try commit to main…"
           echo "applied" > "${MARKER_FILE}"
           git add -A
-          git commit -m "Andishe2: one-time transform (homeserver=${HOMESERVER_URL}, fa/en only, remove invites/qr/support, branding ${BRAND_FA}, minSdk=23, shrink)."
+          git commit -m "[skip ci] Andishe2: one-time transform (homeserver=${HOMESERVER_URL}, fa/en only, remove invites/qr/support, branding ${BRAND_FA}, minSdk=23, shrink)."
 
           if git push origin HEAD:main; then
             echo "::notice::Pushed to main"
@@ -185,17 +192,16 @@ jobs:
       - name: Run transform
         run: ./andishe2.sh
 
-      - name: Build release APK (no-cache, lightweight)
+      - name: Build release APK (robust)
         run: |
           set -euo pipefail
           chmod +x ./gradlew
-          ./gradlew --no-daemon clean assembleRelease -x test -x lint
-          APK_PATH=$(ls -1 **/build/outputs/apk/release/*.apk | head -n1 || true)
-          if [ -z "${APK_PATH}" ]; then
-            echo "No APK found. Check gradle errors in previous logs."
-            exit 1
-          fi
-          echo "apk_path=${APK_PATH}" >> $GITHUB_ENV
+          # سعی کن تسک عمومی و اگر نبود، اپ ماژول
+          ./gradlew --no-daemon --stacktrace clean assembleRelease -x test -x lint || \
+          ./gradlew --no-daemon --stacktrace clean :app:assembleRelease -x test -x lint
+          APK=$(ls -1 **/build/outputs/apk/release/*.apk | head -n1)
+          echo "apk_path=${APK}" >> $GITHUB_ENV
+          echo "Built: ${APK}"
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
@@ -214,13 +220,7 @@ jobs:
           prerelease: false
           files: ${{ env.apk_path }}
 
-      - name: Self-remove workflow (only if main push succeeded)
+      - name: Self-remove workflow (best-effort)
         run: |
           set -e
-          if git ls-remote --exit-code origin refs/heads/main >/dev/null 2>&1; then
-            if git diff --name-only origin/main | grep -q ".github/workflows/andishe2.yml" || true; then
-              echo "Skip self-remove check"
-            fi
-          fi
-          # Try to remove this workflow; ignore errors (e.g., branch protection or PR path)
-          ( git pull --rebase && git rm -f .github/workflows/andishe2.yml && git commit -m "Andishe2: remove one-time workflow" && git push origin HEAD:main ) || true
+          ( git pull --rebase && git rm -f .github/workflows/andishe2.yml && git commit -m "[skip ci] Andishe2: remove one-time workflow" && git push origin HEAD:main ) || true
