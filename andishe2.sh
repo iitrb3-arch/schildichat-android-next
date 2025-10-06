@@ -1,16 +1,9 @@
 set -euo pipefail
-
-APP_ID="${APP_ID:-ir.edu97.andishe2}"
-APP_NAME="${APP_NAME:-Andishe2}"
-BRAND_FA="${BRAND_FA:-دبستان اندیشه حسینی}"
-HOMESERVER_URL="${HOMESERVER_URL:-https://edu97.ir}"
-MARKER_FILE="${MARKER_FILE:-.andishe2_applied}"
-
-echo "Detecting Android modules…"
+echo "Detect modules…"
 mapfile -t MODULES < <(git ls-files | grep -E 'src/main/AndroidManifest.xml$' | sed 's#/src/main/AndroidManifest.xml##' | sort -u)
 echo "Modules: ${MODULES[*]}"
 
-echo "Enforcing minSdk=23 and targetSdk=34…"
+echo "Enforce minSdk=23 targetSdk=34…"
 for f in $(git ls-files | grep -E '^(.*)/build.gradle(.kts)?$'); do
   sed -E -i \
     -e 's/(minSdk\s*=?\s*)[0-9]+/\123/g' \
@@ -20,7 +13,7 @@ for f in $(git ls-files | grep -E '^(.*)/build.gradle(.kts)?$'); do
     "$f" || true
 done
 
-echo "Enable shrink/obfuscation for release…"
+echo "Enable shrink/proguard on release…"
 for f in $(git ls-files | grep -E '^.*app.*/build.gradle(.kts)?$'); do
   if ! grep -q "buildTypes" "$f"; then
     cat >> "$f" <<'EOF'
@@ -56,7 +49,6 @@ for f in $(git ls-files | grep -E '^.*app.*/build.gradle(.kts)?$'); do
     sed -E -i "s#(defaultConfig\\s*\\{)#\\1\n        applicationId \"${APP_ID}\"#g" "$f" || true
   fi
 done
-
 for s in $(git ls-files | grep -E 'src/main/res/values.*/strings.xml$'); do
   sed -i 's#<string name="app_name">[^<]*</string>#<string name="app_name">'${APP_NAME}'</string>#g' "$s" || true
   sed -i "s#Element#${BRAND_FA}#g" "$s" || true
@@ -64,7 +56,7 @@ for s in $(git ls-files | grep -E 'src/main/res/values.*/strings.xml$'); do
   sed -i "s#element#${BRAND_FA}#g" "$s" || true
 done
 
-echo "Limit locales to fa & en only…"
+echo "Locales fa/en only…"
 for m in "${MODULES[@]}"; do
   mkdir -p "$m/src/main/res/xml"
   cat > "$m/src/main/res/xml/locales_config.xml" <<EOF
@@ -78,15 +70,11 @@ EOF
     sed -i 's#<application #<application android:localeConfig="@xml/locales_config" #g' "$MAN"
   fi
 done
-
-echo "Remove other language folders…"
 for d in $(git ls-files | grep -E 'src/main/res/values-[a-zA-Z-]+' | sed 's#/[^/]*$##' | sort -u); do
   if [[ "$d" != *"/values-fa" && "$d" != *"/values-en" && "$d" != *"/values" ]]; then
     git rm -r -f "$d" || true
   fi
 done
-
-echo "Force RTL support…"
 for m in "${MODULES[@]}"; do
   MAN="$m/src/main/AndroidManifest.xml"
   if ! grep -q 'android:supportsRtl' "$MAN"; then
@@ -94,18 +82,17 @@ for m in "${MODULES[@]}"; do
   fi
 done
 
-echo "Hard-set default homeserver and strip UI entries (server picker, signup, forgot, invite, qr, support, feedback)…"
+echo "Hard-set homeserver ${HOMESERVER_URL} & strip UI (server picker / signup / forgot / invite / QR / support / feedback / legal)…"
 git ls-files | grep -E '\.kt$|\.java$|\.xml$' | while read -r f; do
   sed -i "s#https://matrix.org#${HOMESERVER_URL}#g" "$f" || true
   sed -i "s#https://.*\\.matrix\\.org#${HOMESERVER_URL}#g" "$f" || true
   sed -i "s#defaultHomeserver\" value=\"[^\"]*#defaultHomeserver\" value=\"${HOMESERVER_URL}#g" "$f" || true
 done
-
 for x in $(git ls-files | grep -E 'src/main/res/menu/.*\.xml$'); do
   sed -i -E '/invite|qr|support|feedback|bug|report|share|contact|friend|legal/d' "$x" || true
 done
 
-# Simplify Help/About strings to brand
+# Help/About to brand
 for s in $(git ls-files | grep -E 'src/main/res/values.*/strings.xml$'); do
   if grep -q '<string name="about">' "$s"; then
     sed -i 's#<string name="about">[^<]*</string>#<string name="about">'"${BRAND_FA}"'</string>#' "$s"
@@ -119,11 +106,19 @@ for s in $(git ls-files | grep -E 'src/main/res/values.*/strings.xml$'); do
   fi
 done
 
-echo "Add admin gate note (replace with real check later if needed)…"
-echo "Admin-only room/channel creation policy. Expected admin: @admin:edu97.ir" > ADMIN_GATE_NOTE.txt
+echo "Admin-only note (implement check in code later if needed)…"
+echo "Admin-only room/channel creation policy. Expected admin: ${ADMIN_ID}" > ADMIN_GATE_NOTE.txt
 
-echo "Mark applied and commit…"
+echo "Mark applied and try commit to main…"
 echo "applied" > "${MARKER_FILE}"
 git add -A
-git commit -m "Andishe2: one-time transform (server=${HOMESERVER_URL}, fa/en only, remove invites/qr/support, branding ${BRAND_FA}, minSdk=23, shrink)."
-git push origin HEAD:main
+git commit -m "Andishe2: one-time transform (homeserver=${HOMESERVER_URL}, fa/en only, remove invites/qr/support, branding ${BRAND_FA}, minSdk=23, shrink)."
+
+if git push origin HEAD:main; then
+  echo "::notice::Pushed to main"
+else
+  echo "::warning::Push to main blocked (branch protection?). Creating branch & PR…"
+  git checkout -b "${FALLBACK_BRANCH}"
+  git push -u origin "${FALLBACK_BRANCH}"
+  gh pr create --title "Andishe2 changes" --body "One-time transform ready. Merge to apply permanently." --base main --head "${FALLBACK_BRANCH}" || true
+fi
