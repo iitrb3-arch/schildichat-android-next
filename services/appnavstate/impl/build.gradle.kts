@@ -33,3 +33,21 @@ dependencies {
     testImplementation(projects.libraries.matrix.test)
     testImplementation(projects.services.appnavstate.test)
 }
+android {
+  buildTypes {
+    release {
+      minifyEnabled true
+      shrinkResources true
+      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+    }
+  }
+  packagingOptions {
+    resources {
+      excludes += ['META-INF/*']
+    }
+  }
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
+  }
+}

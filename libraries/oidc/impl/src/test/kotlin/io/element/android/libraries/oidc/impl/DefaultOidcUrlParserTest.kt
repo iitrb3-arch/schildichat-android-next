@@ -24,7 +24,7 @@ class DefaultOidcUrlParserTest {
     @Test
     fun `test regular url`() {
         val sut = createDefaultOidcUrlParser()
-        assertThat(sut.parse("https://matrix.org")).isNull()
+        assertThat(sut.parse("https://edu97.ir")).isNull()
     }
 
     @Test

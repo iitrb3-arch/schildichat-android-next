@@ -38,8 +38,8 @@ data class MediaRequestData(
     }
 }
 
-/** Max width a thumbnail can have according to [the spec](https://spec.matrix.org/v1.10/client-server-api/#thumbnails). */
+/** Max width a thumbnail can have according to [the spec](https://edu97.ir/v1.10/client-server-api/#thumbnails). */
 const val MAX_THUMBNAIL_WIDTH = 800L
 
-/** Max height a thumbnail can have according to [the spec](https://spec.matrix.org/v1.10/client-server-api/#thumbnails). */
+/** Max height a thumbnail can have according to [the spec](https://edu97.ir/v1.10/client-server-api/#thumbnails). */
 const val MAX_THUMBNAIL_HEIGHT = 600L

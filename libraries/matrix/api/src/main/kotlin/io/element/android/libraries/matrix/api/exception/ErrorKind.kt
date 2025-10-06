@@ -14,7 +14,7 @@ sealed interface ErrorKind {
      * One or more room aliases within the m.room.canonical_alias event do
      * not point to the room ID for which the state event is to be sent to.
      *
-     * room aliases: https://spec.matrix.org/latest/client-server-api/#room-aliases
+     * room aliases: https://edu97.ir/latest/client-server-api/#room-aliases
      */
     data object BadAlias : ErrorKind
 
@@ -56,7 +56,7 @@ sealed interface ErrorKind {
      * The user is unable to reject an invite to join the server notices
      * room.
      *
-     * server notices: https://spec.matrix.org/latest/client-server-api/#server-notices
+     * server notices: https://edu97.ir/latest/client-server-api/#server-notices
      */
     data object CannotLeaveServerNoticeRoom : ErrorKind
 
@@ -102,7 +102,7 @@ sealed interface ErrorKind {
      *
      * The request is an attempt to send a duplicate annotation.
      *
-     * duplicate annotation: https://spec.matrix.org/latest/client-server-api/#avoiding-duplicate-annotations
+     * duplicate annotation: https://edu97.ir/latest/client-server-api/#avoiding-duplicate-annotations
      */
     data object DuplicateAnnotation : ErrorKind
 
@@ -127,7 +127,7 @@ sealed interface ErrorKind {
      *
      * The room or resource does not permit guests to access it.
      *
-     * guests: https://spec.matrix.org/latest/client-server-api/#guest-access
+     * guests: https://edu97.ir/latest/client-server-api/#guest-access
      */
     data object GuestAccessForbidden : ErrorKind
 
@@ -175,7 +175,7 @@ sealed interface ErrorKind {
      * The request has been refused due to rate limiting: too many requests
      * have been sent in a short period of time.
      *
-     * rate limiting: https://spec.matrix.org/latest/client-server-api/#rate-limiting
+     * rate limiting: https://edu97.ir/latest/client-server-api/#rate-limiting
      */
     data class LimitExceeded(
         /**
@@ -196,7 +196,7 @@ sealed interface ErrorKind {
      *
      * No access token was specified for the request, but one is required.
      *
-     * access token: https://spec.matrix.org/latest/client-server-api/#client-authentication
+     * access token: https://edu97.ir/latest/client-server-api/#client-authentication
      */
     data object MissingToken : ErrorKind
 
@@ -242,7 +242,7 @@ sealed interface ErrorKind {
      *
      * The room alias specified in the request is already taken.
      *
-     * room alias: https://spec.matrix.org/latest/client-server-api/#room-aliases
+     * room alias: https://edu97.ir/latest/client-server-api/#room-aliases
      */
     data object RoomInUse : ErrorKind
 
@@ -259,7 +259,7 @@ sealed interface ErrorKind {
      *
      * Authentication could not be performed on the third-party identifier.
      *
-     * third-party identifier: https://spec.matrix.org/latest/client-server-api/#adding-account-administrative-contact-information
+     * third-party identifier: https://edu97.ir/latest/client-server-api/#adding-account-administrative-contact-information
      */
     data object ThreepidAuthFailed : ErrorKind
 
@@ -270,7 +270,7 @@ sealed interface ErrorKind {
      * happen if the server only permits, for example, email addresses from
      * a particular domain.
      *
-     * third-party identifier: https://spec.matrix.org/latest/client-server-api/#adding-account-administrative-contact-information
+     * third-party identifier: https://edu97.ir/latest/client-server-api/#adding-account-administrative-contact-information
      */
     data object ThreepidDenied : ErrorKind
 
@@ -279,7 +279,7 @@ sealed interface ErrorKind {
      *
      * The third-party identifier is already in use by another user.
      *
-     * third-party identifier: https://spec.matrix.org/latest/client-server-api/#adding-account-administrative-contact-information
+     * third-party identifier: https://edu97.ir/latest/client-server-api/#adding-account-administrative-contact-information
      */
     data object ThreepidInUse : ErrorKind
 
@@ -289,7 +289,7 @@ sealed interface ErrorKind {
      * The homeserver does not support adding a third-party identifier of the
      * given medium.
      *
-     * third-party identifier: https://spec.matrix.org/latest/client-server-api/#adding-account-administrative-contact-information
+     * third-party identifier: https://edu97.ir/latest/client-server-api/#adding-account-administrative-contact-information
      */
     data object ThreepidMediumNotSupported : ErrorKind
 
@@ -298,7 +298,7 @@ sealed interface ErrorKind {
      *
      * No account matching the given third-party identifier could be found.
      *
-     * third-party identifier: https://spec.matrix.org/latest/client-server-api/#adding-account-administrative-contact-information
+     * third-party identifier: https://edu97.ir/latest/client-server-api/#adding-account-administrative-contact-information
      */
     data object ThreepidNotFound : ErrorKind
 
@@ -316,7 +316,7 @@ sealed interface ErrorKind {
      * the homeserver. This can happen if the homeserver does not know
      * about any of the rooms listed as conditions, for example.
      *
-     * restricted: https://spec.matrix.org/latest/client-server-api/#restricted-rooms
+     * restricted: https://edu97.ir/latest/client-server-api/#restricted-rooms
      */
     data object UnableToAuthorizeJoin : ErrorKind
 
@@ -329,7 +329,7 @@ sealed interface ErrorKind {
      * but the resident server would be unable to meet the authorization
      * rules.
      *
-     * restricted rooms: https://spec.matrix.org/latest/client-server-api/#restricted-rooms
+     * restricted rooms: https://edu97.ir/latest/client-server-api/#restricted-rooms
      */
     data object UnableToGrantJoin : ErrorKind
 
@@ -352,7 +352,7 @@ sealed interface ErrorKind {
      *
      * The access or refresh token specified was not recognized.
      *
-     * access or refresh token: https://spec.matrix.org/latest/client-server-api/#client-authentication
+     * access or refresh token: https://edu97.ir/latest/client-server-api/#client-authentication
      */
     data class UnknownToken(
         /**
@@ -361,7 +361,7 @@ sealed interface ErrorKind {
          * invalidated. The client can acquire a new access token by
          * specifying the device ID it is already using to the login API.
          *
-         * soft logout: https://spec.matrix.org/latest/client-server-api/#soft-logout
+         * soft logout: https://edu97.ir/latest/client-server-api/#soft-logout
          */
         val softLogout: Boolean
     ) : ErrorKind
@@ -412,7 +412,7 @@ sealed interface ErrorKind {
      *
      * The account has been locked and cannot be used at this time.
      *
-     * locked: https://spec.matrix.org/latest/client-server-api/#account-locking
+     * locked: https://edu97.ir/latest/client-server-api/#account-locking
      */
     data object UserLocked : ErrorKind
 
@@ -422,7 +422,7 @@ sealed interface ErrorKind {
      * The account has been suspended and can only be used for limited
      * actions at this time.
      *
-     * suspended: https://spec.matrix.org/latest/client-server-api/#account-suspension
+     * suspended: https://edu97.ir/latest/client-server-api/#account-suspension
      */
     data object UserSuspended : ErrorKind
 
@@ -431,7 +431,7 @@ sealed interface ErrorKind {
      *
      * The password was rejected by the server for being too weak.
      *
-     * rejected: https://spec.matrix.org/latest/client-server-api/#notes-on-password-management
+     * rejected: https://edu97.ir/latest/client-server-api/#notes-on-password-management
      */
     data object WeakPassword : ErrorKind
 
@@ -441,7 +441,7 @@ sealed interface ErrorKind {
      * The version of the room keys backup provided in the request does not
      * match the current backup version.
      *
-     * room keys backup: https://spec.matrix.org/latest/client-server-api/#server-side-key-backups
+     * room keys backup: https://edu97.ir/latest/client-server-api/#server-side-key-backups
      */
     data class WrongRoomKeysVersion(
         /**

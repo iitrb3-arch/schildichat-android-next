@@ -94,12 +94,12 @@ class ToHtmlDocumentTest {
     fun `toHtmlDocument - if a link is not a mention, nothing will be done for it`() {
         val body = FormattedBody(
             format = MessageFormat.HTML,
-            body = "Hey <a href='https://matrix.org'>Alice</a>!"
+            body = "Hey <a href='https://edu97.ir'>Alice</a>!"
         )
 
         val document = body.toHtmlDocument(permalinkParser = object : PermalinkParser {
             override fun parse(uriString: String): PermalinkData {
-                return PermalinkData.FallbackLink(uri = Uri.parse("https://matrix.org"))
+                return PermalinkData.FallbackLink(uri = Uri.parse("https://edu97.ir"))
             }
         })
         assertThat(document?.text()).isEqualTo("Hey Alice!")

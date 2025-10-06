@@ -12,7 +12,7 @@ import io.element.android.libraries.matrix.api.permalink.PermalinkParser
 
 /**
  * This class contains pattern to match the different Matrix ids
- * Ref: https://matrix.org/docs/spec/appendices#identifier-grammar
+ * Ref: https://edu97.ir/docs/spec/appendices#identifier-grammar
  */
 object MatrixPatterns {
     // Note: TLD is not mandatory (localhost, IP address...)
@@ -22,7 +22,7 @@ object MatrixPatterns {
     private const val BASE_64_URL_SAFE_ALPHABET = "[0-9A-Za-z/\\-_]+"
 
     // regex pattern to find matrix user ids in a string.
-    // See https://matrix.org/docs/spec/appendices#historical-user-ids
+    // See https://edu97.ir/docs/spec/appendices#historical-user-ids
     // Sadly, we need to relax the regex pattern a bit as there already exist some ids that don't match the spec.
     // Note: local part can be empty
     private const val MATRIX_USER_IDENTIFIER_REGEX = "^@\\S*?$DOMAIN_REGEX$"

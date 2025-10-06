@@ -177,11 +177,11 @@ class TimelineItemContentMessageFactoryTest {
     fun `test create TextMessageType with HTML formatted body`() = runTest {
         val expected = buildSpannedString {
             append("link to ")
-            inSpans(URLSpan("https://matrix.org")) {
-                append("https://matrix.org")
+            inSpans(URLSpan("https://edu97.ir")) {
+                append("https://edu97.ir")
             }
             append(" ")
-            inSpans(URLSpan("https://matrix.org")) {
+            inSpans(URLSpan("https://edu97.ir")) {
                 append("and manually added link")
             }
         }.toSpannable()

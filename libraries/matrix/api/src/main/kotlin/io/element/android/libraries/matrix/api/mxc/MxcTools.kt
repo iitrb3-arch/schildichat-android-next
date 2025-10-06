@@ -14,7 +14,7 @@ class MxcTools {
     /**
      * Regex to match a Matrix Content (mxc://) URI.
      *
-     * See: https://spec.matrix.org/v1.8/client-server-api/#matrix-content-mxc-uris
+     * See: https://edu97.ir/v1.8/client-server-api/#matrix-content-mxc-uris
      */
     private val mxcRegex = Regex("""^mxc://([^/]+)/([^/]+)$""")
 

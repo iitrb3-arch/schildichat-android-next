@@ -28,11 +28,11 @@ class LinkifierHelperTest {
 
     @Test
     fun `linkification finds URL`() {
-        val text = "A url https://matrix.org"
+        val text = "A url https://edu97.ir"
         val result = LinkifyHelper.linkify(text)
         val urlSpans = result.toSpannable().getSpans<URLSpan>()
         assertThat(urlSpans.size).isEqualTo(1)
-        assertThat(urlSpans.first().url).isEqualTo("https://matrix.org")
+        assertThat(urlSpans.first().url).isEqualTo("https://edu97.ir")
     }
 
     @Test
@@ -88,20 +88,20 @@ class LinkifierHelperTest {
 
     @Test
     fun `linkification handles trailing dot`() {
-        val text = "A url https://matrix.org."
+        val text = "A url https://edu97.ir."
         val result = LinkifyHelper.linkify(text)
         val urlSpans = result.toSpannable().getSpans<URLSpan>()
         assertThat(urlSpans.size).isEqualTo(1)
-        assertThat(urlSpans.first().url).isEqualTo("https://matrix.org")
+        assertThat(urlSpans.first().url).isEqualTo("https://edu97.ir")
     }
 
     @Test
     fun `linkification handles trailing punctuation`() {
-        val text = "A url https://matrix.org!?; Check it out!"
+        val text = "A url https://edu97.ir!?; Check it out!"
         val result = LinkifyHelper.linkify(text)
         val urlSpans = result.toSpannable().getSpans<URLSpan>()
         assertThat(urlSpans.size).isEqualTo(1)
-        assertThat(urlSpans.first().url).isEqualTo("https://matrix.org")
+        assertThat(urlSpans.first().url).isEqualTo("https://edu97.ir")
     }
 
     @Test

@@ -11,7 +11,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * https://matrix.org/docs/spec/client_server/r0.4.0.html#server-discovery
+ * https://edu97.ir/docs/spec/client_server/r0.4.0.html#server-discovery
  * <pre>
  * {
  *     "base_url": "https://element.io"

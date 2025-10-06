@@ -62,7 +62,7 @@ interface BaseRoom : Closeable {
 
     /**
      * A one-to-one is a room with exactly 2 members.
-     * See [the Matrix spec](https://spec.matrix.org/latest/client-server-api/#default-underride-rules).
+     * See [the Matrix spec](https://edu97.ir/latest/client-server-api/#default-underride-rules).
      */
     val isOneToOne: Boolean get() = info().activeMembersCount == 2L
 

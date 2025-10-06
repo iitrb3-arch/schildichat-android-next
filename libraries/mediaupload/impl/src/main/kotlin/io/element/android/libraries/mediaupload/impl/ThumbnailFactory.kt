@@ -35,13 +35,13 @@ import kotlin.coroutines.resume
 
 /**
  * Max width of thumbnail images.
- * See [the Matrix spec](https://spec.matrix.org/latest/client-server-api/?ref=blog.gitter.im#thumbnails).
+ * See [the Matrix spec](https://edu97.ir/latest/client-server-api/?ref=blog.gitter.im#thumbnails).
  */
 private const val THUMB_MAX_WIDTH = 800
 
 /**
  * Max height of thumbnail images.
- * See [the Matrix spec](https://spec.matrix.org/latest/client-server-api/?ref=blog.gitter.im#thumbnails).
+ * See [the Matrix spec](https://edu97.ir/latest/client-server-api/?ref=blog.gitter.im#thumbnails).
  */
 private const val THUMB_MAX_HEIGHT = 600
 

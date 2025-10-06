@@ -22,7 +22,7 @@ sealed interface SessionVerificationData {
     ) : SessionVerificationData
 }
 
-// https://spec.matrix.org/unstable/client-server-api/#sas-method-emoji
+// https://edu97.ir/unstable/client-server-api/#sas-method-emoji
 data class VerificationEmoji(
     val number: Int,
 )

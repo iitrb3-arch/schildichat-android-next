@@ -150,7 +150,7 @@ class IntentResolverTest {
     @Test
     fun `test resolve external permalink, FallbackLink should be ignored`() {
         val sut = createIntentResolver(
-            permalinkParserResult = { PermalinkData.FallbackLink(Uri.parse("https://matrix.org")) },
+            permalinkParserResult = { PermalinkData.FallbackLink(Uri.parse("https://edu97.ir")) },
             loginIntentResolverResult = { null },
             oidcIntentResolverResult = { null },
         )
@@ -206,7 +206,7 @@ class IntentResolverTest {
     @Test
     fun `test resolve invalid`() {
         val sut = createIntentResolver(
-            permalinkParserResult = { PermalinkData.FallbackLink(Uri.parse("https://matrix.org")) },
+            permalinkParserResult = { PermalinkData.FallbackLink(Uri.parse("https://edu97.ir")) },
             loginIntentResolverResult = { null },
             oidcIntentResolverResult = { null },
         )

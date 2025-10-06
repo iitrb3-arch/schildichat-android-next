@@ -1,0 +1,1 @@
+Admin-only room/channel creation policy. Expected admin: @admin:edu97.ir
