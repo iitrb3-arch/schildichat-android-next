@@ -20,7 +20,7 @@ jobs:
       MARKER_FILE: ".andishe2_applied"
 
     steps:
-      - name: Checkout
+      - name: Checkout main
         uses: actions/checkout@v4
         with:
           ref: main
@@ -33,30 +33,36 @@ jobs:
             exit 0
           fi
 
-      - name: Java 17
+      - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
-          distribution: "zulu"
+          distribution: zulu
           java-version: "17"
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Gradle cache
+      - name: Setup Gradle cache
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Apply code & resource transformations
+      - name: Write transform script
         shell: bash
         run: |
           set -euo pipefail
+          cat > andishe2.sh <<'BASH'
+          set -euo pipefail
 
-          # 0) Detect Android modules (app-like) by presence of AndroidManifest.xml
+          APP_ID="${APP_ID:-ir.edu97.andishe2}"
+          APP_NAME="${APP_NAME:-Andishe2}"
+          BRAND_FA="${BRAND_FA:-دبستان اندیشه حسینی}"
+          HOMESERVER_URL="${HOMESERVER_URL:-https://edu97.ir}"
+          MARKER_FILE="${MARKER_FILE:-.andishe2_applied}"
+
           echo "Detecting Android modules…"
           mapfile -t MODULES < <(git ls-files | grep -E 'src/main/AndroidManifest.xml$' | sed 's#/src/main/AndroidManifest.xml##' | sort -u)
           echo "Modules: ${MODULES[*]}"
 
-          # 1) Force minSdk=23, targetSdk=34 in all gradle files
-          echo "Enforcing SDK versions…"
+          echo "Enforcing minSdk=23 and targetSdk=34…"
           for f in $(git ls-files | grep -E '^(.*)/build.gradle(.kts)?$'); do
             sed -E -i \
               -e 's/(minSdk\s*=?\s*)[0-9]+/\123/g' \
@@ -66,47 +72,43 @@ jobs:
               "$f" || true
           done
 
-          # Also turn on shrinking/obfuscation for release to make APK smaller
-          echo "Enabling shrinker and proguard…"
+          echo "Enable shrink/obfuscation for release…"
           for f in $(git ls-files | grep -E '^.*app.*/build.gradle(.kts)?$'); do
             if ! grep -q "buildTypes" "$f"; then
               cat >> "$f" <<'EOF'
-
-android {
-  buildTypes {
-    release {
-      minifyEnabled true
-      shrinkResources true
-      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-    }
-  }
-  packagingOptions {
-    resources {
-      excludes += ['META-INF/*']
-    }
-  }
-  compileOptions {
-    sourceCompatibility JavaVersion.VERSION_17
-    targetCompatibility JavaVersion.VERSION_17
-  }
-}
-EOF
+          android {
+            buildTypes {
+              release {
+                minifyEnabled true
+                shrinkResources true
+                proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+              }
+            }
+            packagingOptions {
+              resources {
+                excludes += ['META-INF/*']
+              }
+            }
+            compileOptions {
+              sourceCompatibility JavaVersion.VERSION_17
+              targetCompatibility JavaVersion.VERSION_17
+            }
+          }
+          EOF
             else
               sed -i -E "s/release\s*\\{[^}]*\\}/release { minifyEnabled true\nshrinkResources true\nproguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro' }/g" "$f" || true
             fi
           done
 
-          # 2) ApplicationId & app name
-          echo "Setting applicationId and app name…"
+          echo "Set applicationId & app_name…"
           for f in $(git ls-files | grep -E '^.*app.*/build.gradle(.kts)?$'); do
-            if grep -q "applicationId" "$f"; then
+            if grep -q 'applicationId' "$f"; then
               sed -E -i "s#applicationId\\s+\"[^\"]+\"#applicationId \"${APP_ID}\"#g" "$f"
             else
               sed -E -i "s#(defaultConfig\\s*\\{)#\\1\n        applicationId \"${APP_ID}\"#g" "$f" || true
             fi
           done
 
-          # strings: app_name to Andishe2, replace "Element" branding with Persian brand
           for s in $(git ls-files | grep -E 'src/main/res/values.*/strings.xml$'); do
             sed -i 's#<string name="app_name">[^<]*</string>#<string name="app_name">'${APP_NAME}'</string>#g' "$s" || true
             sed -i "s#Element#${BRAND_FA}#g" "$s" || true
@@ -114,32 +116,29 @@ EOF
             sed -i "s#element#${BRAND_FA}#g" "$s" || true
           done
 
-          # 3) Limit locales to fa & en only
-          echo "Limiting locales to fa and en…"
+          echo "Limit locales to fa & en only…"
           for m in "${MODULES[@]}"; do
             mkdir -p "$m/src/main/res/xml"
             cat > "$m/src/main/res/xml/locales_config.xml" <<EOF
-<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
-    <locale android:name="fa"/>
-    <locale android:name="en"/>
-</locale-config>
-EOF
-            # Link in Manifest
+          <locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+              <locale android:name="fa"/>
+              <locale android:name="en"/>
+          </locale-config>
+          EOF
             MAN="$m/src/main/AndroidManifest.xml"
             if ! grep -q 'android:localeConfig' "$MAN"; then
               sed -i 's#<application #<application android:localeConfig="@xml/locales_config" #g' "$MAN"
             fi
           done
 
-          # Remove all other language resource folders except values (en) and values-fa
-          echo "Removing other language resource folders…"
+          echo "Remove other language folders…"
           for d in $(git ls-files | grep -E 'src/main/res/values-[a-zA-Z-]+' | sed 's#/[^/]*$##' | sort -u); do
             if [[ "$d" != *"/values-fa" && "$d" != *"/values-en" && "$d" != *"/values" ]]; then
               git rm -r -f "$d" || true
             fi
           done
 
-          # 4) Force RTL support (for Persian as base)
+          echo "Force RTL support…"
           for m in "${MODULES[@]}"; do
             MAN="$m/src/main/AndroidManifest.xml"
             if ! grep -q 'android:supportsRtl' "$MAN"; then
@@ -147,59 +146,44 @@ EOF
             fi
           done
 
-          # 5) Hard-set default homeserver to edu97.ir and remove server picker, signup, forgot-pass, invites, QR, support, feedback
-          echo "Hard-setting homeserver and stripping UI entries…"
-
-          # Replace common homeserver defaults to edu97.ir
+          echo "Hard-set default homeserver and strip UI entries (server picker, signup, forgot, invite, qr, support, feedback)…"
           git ls-files | grep -E '\.kt$|\.java$|\.xml$' | while read -r f; do
             sed -i "s#https://matrix.org#${HOMESERVER_URL}#g" "$f" || true
             sed -i "s#https://.*\\.matrix\\.org#${HOMESERVER_URL}#g" "$f" || true
             sed -i "s#defaultHomeserver\" value=\"[^\"]*#defaultHomeserver\" value=\"${HOMESERVER_URL}#g" "$f" || true
           done
 
-          # Hide/remove server picker, sign-up & forgot-password by removing menu/actions & composables/entries commonly named
-          # Remove obvious menu items: invite, qr, support, feedback, bug report, legal/help/about links except we rewrite help/about text
           for x in $(git ls-files | grep -E 'src/main/res/menu/.*\.xml$'); do
             sed -i -E '/invite|qr|support|feedback|bug|report|share|contact|friend|legal/d' "$x" || true
           done
 
-          # Remove QR resources (if any)
-          git ls-files | grep -E 'qr|invite' | xargs -r git rm -f || true
-
-          # Replace Help/About content strings
+          # Simplify Help/About strings to brand
           for s in $(git ls-files | grep -E 'src/main/res/values.*/strings.xml$'); do
-            # simple overrides (add if not exists)
-            if ! grep -q 'about' "$s"; then
-              sed -i 's#</resources>#<string name="about">'"${BRAND_FA}"'</string>\n</resources>#' "$s"
-            else
+            if grep -q '<string name="about">' "$s"; then
               sed -i 's#<string name="about">[^<]*</string>#<string name="about">'"${BRAND_FA}"'</string>#' "$s"
-            fi
-            if ! grep -q 'help' "$s"; then
-              sed -i 's#</resources>#<string name="help">'"${BRAND_FA}"'</string>\n</resources>#' "$s"
             else
+              sed -i 's#</resources>#<string name="about">'"${BRAND_FA}"'</string>\n</resources>#' "$s"
+            fi
+            if grep -q '<string name="help">' "$s"; then
               sed -i 's#<string name="help">[^<]*</string>#<string name="help">'"${BRAND_FA}"'</string>#' "$s"
+            else
+              sed -i 's#</resources>#<string name="help">'"${BRAND_FA}"'</string>\n</resources>#' "$s"
             fi
           done
 
-          # 6) Gate room/channel creation to a single admin (placeholder ID)
-          # NOTE: Replace YOUR_ADMIN_MATRIX_ID with your actual Matrix ID later if needed.
-          ADMIN_ID='@admin:edu97.ir'
-          cat > .andishe2_admin_gate.patch <<'PATCH'
-*** a/ADMIN_GATE_PLACEHOLDER.txt
---- /dev/null
-***************
-*** 0 ****
---- 1 ----
-+This repository enforces admin-only room/channel creation via runtime checks (inject guard in CreateRoomViewModel / flows). Implementers: ensure current user matches @admin:edu97.ir.
-PATCH
-          git apply .andishe2_admin_gate.patch || true
-          rm -f .andishe2_admin_gate.patch
+          echo "Add admin gate note (replace with real check in your code later if needed)…"
+          echo "Admin-only room/channel creation policy. Expected admin: @admin:edu97.ir" > ADMIN_GATE_NOTE.txt
 
-          # 7) Mark as applied
+          echo "Mark applied and commit…"
           echo "applied" > "${MARKER_FILE}"
           git add -A
           git commit -m "Andishe2: one-time transform (server=${HOMESERVER_URL}, fa/en only, remove invites/qr/support, branding ${BRAND_FA}, minSdk=23, shrink)."
           git push origin HEAD:main
+          BASH
+          chmod +x andishe2.sh
+
+      - name: Run transform
+        run: ./andishe2.sh
 
       - name: Build release APK (lightweight)
         run: |
